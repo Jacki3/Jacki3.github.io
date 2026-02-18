@@ -325,9 +325,7 @@ const DetailsCard = ({ profile, loading, social, github }: Props) => {
                 <ListItem
                   icon={<FaGlobe />}
                   title="Website:"
-                  value={social.website
-                    .replace('https://', '')
-                    .replace('http://', '')}
+                  value={Jack Brett}
                   link={
                     !social.website.startsWith('http')
                       ? `http://${social.website}`
@@ -339,7 +337,7 @@ const DetailsCard = ({ profile, loading, social, github }: Props) => {
                 <ListItem
                   icon={<MdPhotoLibrary />}
                   title="Photos:"
-                  value="Google Photos Album"
+                  value="All These Things"
                   link={social.googlePhotos}
                 />
               )}
