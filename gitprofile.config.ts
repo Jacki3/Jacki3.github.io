@@ -73,7 +73,7 @@ const CONFIG = {
     website: 'https://staffprofiles.bournemouth.ac.uk/display/jbrett2',
     phone: '',
     email: '',
-    googlePhotos: 'photos.app.goo.gl/WLdyv6qsks7XeeV87',
+    googlePhotos: 'https://photos.app.goo.gl/WLdyv6qsks7XeeV87',
   },
   resume: {
     fileUrl:
