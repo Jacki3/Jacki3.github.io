@@ -51,7 +51,7 @@ const CONFIG = {
       ],
     },
   },
-  seo: { title: 'Portfolio of Ariful Alam', description: '', imageURL: '' },
+  seo: { title: 'Portfolio of Jack Brett', description: 'Bournemouth University', imageURL: '' },
   social: {
     linkedin: 'ariful-alam',
     x: 'arif_szn',
