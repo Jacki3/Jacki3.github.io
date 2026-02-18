@@ -65,14 +65,15 @@ const CONFIG = {
     udemy: '',
     dribbble: '',
     behance: '',
-    medium: 'arifszn',
-    dev: 'arifszn',
+    medium: '',
+    dev: '',
     stackoverflow: '', // example: '1/jeff-atwood'
     discord: '',
     telegram: '',
     website: 'https://staffprofiles.bournemouth.ac.uk/display/jbrett2',
     phone: '',
     email: '',
+    googlePhotos: 'photos.app.goo.gl/WLdyv6qsks7XeeV87',
   },
   resume: {
     fileUrl:
