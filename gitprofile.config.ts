@@ -53,10 +53,10 @@ const CONFIG = {
   },
   seo: { title: 'Portfolio of Jack Brett', description: 'Bournemouth University', imageURL: '' },
   social: {
-    linkedin: 'ariful-alam',
-    x: 'arif_szn',
-    mastodon: 'arifszn@mastodon.social',
-    researchGate: '',
+    linkedin: 'jack-brett',
+    x: '',
+    mastodon: '',
+    researchGate: 'Jack-Brett',
     facebook: '',
     instagram: '',
     reddit: '',
@@ -70,7 +70,7 @@ const CONFIG = {
     stackoverflow: '', // example: '1/jeff-atwood'
     discord: '',
     telegram: '',
-    website: 'https://www.arifszn.com',
+    website: 'https://staffprofiles.bournemouth.ac.uk/display/jbrett2',
     phone: '',
     email: '',
   },
