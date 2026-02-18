@@ -325,7 +325,7 @@ const DetailsCard = ({ profile, loading, social, github }: Props) => {
                 <ListItem
                   icon={<FaGlobe />}
                   title="Website:"
-                  value={Jack Brett}
+                  value={"Jack Brett"}
                   link={
                     !social.website.startsWith('http')
                       ? `http://${social.website}`
