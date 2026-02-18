@@ -206,6 +206,8 @@ interface Social {
    * Discord username
    */
   discord?: string;
+
+  googlePhotos?: string;
 }
 
 interface Resume {
