@@ -19,7 +19,7 @@ import {
   FaYoutube,
 } from 'react-icons/fa';
 import { FaSquareThreads } from 'react-icons/fa6';
-import { MdLocationOn } from 'react-icons/md';
+import { MdLocationOn, MdPhotoLibrary } from 'react-icons/md';
 import { RiDiscordFill, RiMailFill, RiPhoneFill } from 'react-icons/ri';
 import { SiResearchgate, SiX, SiUdemy } from 'react-icons/si';
 import { Profile } from '../../interfaces/profile';
@@ -333,6 +333,14 @@ const DetailsCard = ({ profile, loading, social, github }: Props) => {
                       ? `http://${social.website}`
                       : social.website
                   }
+                />
+              )}
+              {social?.googlePhotos && (
+                <ListItem
+                  icon={<MdPhotoLibrary />}
+                  title="Photos:"
+                  value="Google Photos Album"
+                  link={social.googlePhotos}
                 />
               )}
               {social?.telegram && (
