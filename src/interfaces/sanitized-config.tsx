@@ -63,6 +63,7 @@ export interface SanitizedSocial {
   phone?: string;
   email?: string;
   discord?: string;
+  googlePhotos?: string;
 }
 
 export interface SanitizedResume {
