@@ -338,10 +338,7 @@ const DetailsCard = ({ profile, loading, social, github }: Props) => {
                   icon={<MdPhotoLibrary />}
                   title="Photos:"
                   value="All These Things"
-                  link={ !social.website.startsWith('http')
-                      ? `http://${social.website}`
-                      : social.website
-                  }
+                  link={social.googlePhotos}
                 />
               )}
               {social?.telegram && (
