@@ -16,23 +16,31 @@ const CONFIG = {
       // To hide the `External Projects` section, keep it empty.
       projects: [
         {
-          title: 'Project Name',
+          title: 'LoGaCulture - LUTE',
           description:
             'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc ut.',
           imageUrl:
             'https://img.freepik.com/free-vector/illustration-gallery-icon_53876-27002.jpg',
-          link: 'https://example.com',
+          link: 'https://logaculture.eu/otc/lute-authoring-tool/',
         },
         {
-          title: 'Project Name',
+          title: 'ROLI - EngD',
           description:
             'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc ut.',
           imageUrl:
             'https://img.freepik.com/free-vector/illustration-gallery-icon_53876-27002.jpg',
-          link: 'https://example.com',
+          link: 'https://www.youtube.com/watch?v=OaxS5Gq4zk8',
         },
         {
-          title: 'Project Name',
+          title: 'VitaeVR - VStore',
+          description:
+            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc ut.',
+          imageUrl:
+            'https://img.freepik.com/free-vector/illustration-gallery-icon_53876-27002.jpg',
+          link: 'https://gtr.ukri.org/organisation/8A209876-5AF9-466F-AB52-B7ACA1CF2C36',
+        },
+        {
+          title: 'Bog Games - Bridge Wavers',
           description:
             'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc ut.',
           imageUrl:
@@ -44,7 +52,7 @@ const CONFIG = {
     github: {
       display: true, // Display GitHub projects?
       header: 'Github Projects',
-      mode: 'automatic', // Mode can be: 'automatic' or 'manual'
+      mode: 'manual', // Mode can be: 'automatic' or 'manual'
       automatic: {
         sortBy: 'stars', // Sort projects by 'stars' or 'updated'
         limit: 4, // How many projects to display.
@@ -55,7 +63,7 @@ const CONFIG = {
       },
       manual: {
         // Properties for manually specifying projects
-        projects: ['arifszn/gitprofile', 'arifszn/pandora'], // List of repository names to display. example: ['arifszn/my-project1', 'arifszn/my-project2']
+        projects: ['LoGaCulture/LUTE', 'LoGaCulture/LUTE-Server', 'Jacki3/Looper', 'Jacki3/Bridge-Wave'], // List of repository names to display. example: ['arifszn/my-project1', 'arifszn/my-project2']
       },
     },
   },
