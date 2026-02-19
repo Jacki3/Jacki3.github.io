@@ -20,7 +20,7 @@ const CONFIG = {
           description:
             'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nunc ut.',
           imageUrl:
-            'https://github.com/Jacki3/Jacki3.github.io/blob/main/public/logaLogo.png',
+            'https://github.com/LoGaCulture/LUTE/blob/main/Assets/LUTE/Resources/Textures/Icons/logaIcon.png',
           link: 'https://logaculture.eu/otc/lute-authoring-tool/',
         },
         {
