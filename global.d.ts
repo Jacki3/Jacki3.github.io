@@ -342,7 +342,12 @@ interface Config {
   /**
    * Skill list
    */
-  skills?: Array<string>;
+    skills?: Array<string>;
+
+    /**
+    * Hobby list
+    */
+    hobbies?: Array<string>;
 
   /**
    * Experience list

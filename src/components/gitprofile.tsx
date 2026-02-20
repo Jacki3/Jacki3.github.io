@@ -19,6 +19,7 @@ import AvatarCard from './avatar-card';
 import { Profile } from '../interfaces/profile';
 import DetailsCard from './details-card';
 import SkillCard from './skill-card';
+import HobbyCard from './hobby-card';
 import ExperienceCard from './experience-card';
 import EducationCard from './education-card';
 import CertificationCard from './certification-card';
@@ -216,7 +217,7 @@ const GitProfile = ({ config }: { config: Config }) => {
                       loading={loading}
                       skills={sanitizedConfig.skills}
                     />
-                  )}
+                    )}
                   {sanitizedConfig.experiences.length !== 0 && (
                     <ExperienceCard
                       loading={loading}
@@ -234,7 +235,13 @@ const GitProfile = ({ config }: { config: Config }) => {
                       loading={loading}
                       educations={sanitizedConfig.educations}
                     />
-                  )}
+                    )}
+                    {sanitizedConfig.hobbies.length !== 0 && (
+                        <HobbyCard
+                            loading={loading}
+                            hobbies={sanitizedConfig.hobbies}
+                        />
+                    )}
                 </div>
               </div>
               <div className="lg:col-span-2 col-span-1">
@@ -249,12 +256,6 @@ const GitProfile = ({ config }: { config: Config }) => {
                       googleAnalyticId={sanitizedConfig.googleAnalytics.id}
                     />
                   )}
-                  {sanitizedConfig.publications.length !== 0 && (
-                    <PublicationCard
-                      loading={loading}
-                      publications={sanitizedConfig.publications}
-                    />
-                  )}
                   {sanitizedConfig.projects.github.display && (
                     <GithubProjectCard
                       header={sanitizedConfig.projects.github.header}
@@ -262,6 +263,12 @@ const GitProfile = ({ config }: { config: Config }) => {
                       githubProjects={githubProjects}
                       loading={loading}
                       googleAnalyticsId={sanitizedConfig.googleAnalytics.id}
+                    />
+                  )}
+                  {sanitizedConfig.publications.length !== 0 && (
+                    <PublicationCard
+                        loading={loading}
+                        publications={sanitizedConfig.publications}
                     />
                   )}
                   {sanitizedConfig.blog.display && (
