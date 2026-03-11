@@ -32,7 +32,7 @@ const CONFIG = {
           link: 'https://www.youtube.com/watch?v=OaxS5Gq4zk8',
           },
           {
-              title: 'LoGaCulture & Bog Games - Replicas',
+              title: 'LoGaCulture & Boggy Games - Replicas',
               description:
                   'A locative heritage game developed at Avebury, where I co-led development alongside a game designer using LUTE. Players navigate the site to uncover its rich history through exploration and discovery.',
               imageUrl:
@@ -40,7 +40,7 @@ const CONFIG = {
               link: 'https://apps.apple.com/gb/app/replicas/id6747492708',
           },
           {
-              title: 'LoGaCulture & Bog Games - Invitation Investigation',
+              title: 'LoGaCulture & Boggy Games - Invitation Investigation',
               description:
                   'A family-friendly locative game set at Avebury, where I led the development using LUTE. Players explore the ancient site to help cute animal characters recover their lost invitations and make it to a tea party on time.',
               imageUrl:
@@ -54,14 +54,30 @@ const CONFIG = {
           imageUrl:
             '/vitaeLogo.png',
             link: 'https://gtr.ukri.org/projects?ref=studentship-2556912',
-        },
+          },
+          {
+              title: 'Boggy Entertainment - Looper',
+              description:
+                  'The first release under Boggy Entertainment. Looper allows you to record loops and explore the unique sounds of different cultural patterns. Find the MacOS release in the GitHub page; Android coming soon!',
+              imageUrl:
+                  '/loopLogoAllRedNoBg.png',
+              link: 'https://apps.microsoft.com/detail/9nzs7xhnznj0?hl=en-GB&gl=GB',
+          },
         {
-          title: 'Bog Games - Bridge Wavers',
+          title: 'Boggy Entertainment - Bridge Wavers',
           description:
-            'A first release under the title of Bog Games (my own development/publishing agency). The name is derived from our late black cat and the funky logo was designed lovingly by my wife, Chantelle.',
+            'The second release under Boggy Entertainment: a game where you navigate an increasingly dangerous bridge to wave at cars below. Inspired by pandemic strolls with the family. Releases coming soon!',
           imageUrl:
-            '/bogLogoTransparent.png',
-          link: 'https://example.com',
+            '/bridgeLogo.png',
+            link: 'https://github.com/Jacki3/Bridge-Wave',
+          },
+          {
+              title: 'Jack Brett - Level Design',
+              description:
+                  'That map ignited my passion for level design and showed me the unexpected joy of crafting virtual worlds.',
+              imageUrl:
+                  '/levelLogo.png',
+              link: 'https://youtu.be/UTABvihjE4A',
           },
       ],
     },
@@ -109,7 +125,7 @@ const CONFIG = {
   },
   resume: {
     fileUrl:
-      'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', // Empty fileUrl will hide the `Download Resume` button.
+      '/J_Brett_CV_2026.pdf', // Empty fileUrl will hide the `Download Resume` button.
   },
   skills: [
     'C#',
@@ -135,7 +151,6 @@ const CONFIG = {
     ],
     hobbies: [
         'Photography',
-        'Cycling',
         'Keyboard/Piano',
         'Volunteering',
         'Poetry',
@@ -162,7 +177,7 @@ const CONFIG = {
           position: 'Lead Research Developer',
           from: 'December 2017',
           to: 'July 2022',
-          companyLink: 'https://roli.com',
+          companyLink: 'https://gtr.ukri.org/projects?ref=studentship-2556912',
       },
   ],
   certifications: [
@@ -237,7 +252,7 @@ const CONFIG = {
   // Track visitor interaction and behavior. https://www.hotjar.com
   hotjar: { id: '', snippetVersion: 6 },
   themeConfig: {
-    defaultTheme: 'emerald',
+    defaultTheme: 'procyon',
 
     // Hides the switch in the navbar
     // Useful if you want to support a single color mode
