@@ -74,7 +74,7 @@ const CONFIG = {
           {
               title: 'Jack Brett - Level Design',
               description:
-                  'That map ignited my passion for level design and showed me the unexpected joy of crafting virtual worlds.',
+                  'The map that ignited my passion for level design and showed me the joy of crafting virtual worlds.',
               imageUrl:
                   '/levelLogo.png',
               link: 'https://youtu.be/UTABvihjE4A',
