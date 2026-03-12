@@ -32,7 +32,7 @@ const CONFIG = {
           link: 'https://www.youtube.com/watch?v=OaxS5Gq4zk8',
           },
           {
-              title: 'LoGaCulture & Boggy Games - Replicas',
+              title: 'LoGaCulture & Boggy Entertainment - Replicas',
               description:
                   'A locative heritage game developed at Avebury, where I co-led development alongside a game designer using LUTE. Players navigate the site to uncover its rich history through exploration and discovery.',
               imageUrl:
@@ -40,7 +40,7 @@ const CONFIG = {
               link: 'https://apps.apple.com/gb/app/replicas/id6747492708',
           },
           {
-              title: 'LoGaCulture & Boggy Games - Invitation Investigation',
+              title: 'LoGaCulture & Boggy Entertainment - Invitation Investigation',
               description:
                   'A family-friendly locative game set at Avebury, where I led the development using LUTE. Players explore the ancient site to help cute animal characters recover their lost invitations and make it to a tea party on time.',
               imageUrl:
