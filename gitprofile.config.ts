@@ -56,12 +56,12 @@ const CONFIG = {
             link: 'https://gtr.ukri.org/projects?ref=studentship-2556912',
           },
           {
-              title: 'Boggy Entertainment - Looper',
+              title: 'Boggy Entertainment - ScaleLoop',
               description:
-                  'The first release under Boggy Entertainment. Looper allows you to record loops and explore the unique sounds of different cultural patterns. Find the MacOS release in the GitHub page; Android coming soon!',
+                  'The first release under Boggy Entertainment. ScaleLoop allows you to record loops and explore the unique sounds of different cultural patterns. Find the MacOS/Microsoft release in the GitHub page!',
               imageUrl:
                   '/loopLogoAllRedNoBg.png',
-              link: 'https://apps.microsoft.com/detail/9nzs7xhnznj0?hl=en-GB&gl=GB',
+              link: 'https://play.google.com/store/apps/details?id=com.BoggyGames.Looper',
           },
         {
           title: 'Boggy Entertainment - Bridge Wavers',
