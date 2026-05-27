@@ -19,7 +19,7 @@ import {
   FaYoutube,
 } from 'react-icons/fa';
 import { FaSquareThreads } from 'react-icons/fa6';
-import { MdCleaningServices, MdLocationOn, MdPhotoLibrary, MdVolunteerActivism } from 'react-icons/md';
+import { MdLocationOn, MdPhotoLibrary, MdVolunteerActivism } from 'react-icons/md';
 import { RiDiscordFill, RiMailFill, RiPhoneFill } from 'react-icons/ri';
 import { SiResearchgate, SiX, SiUdemy } from 'react-icons/si';
 import { Profile } from '../../interfaces/profile';
