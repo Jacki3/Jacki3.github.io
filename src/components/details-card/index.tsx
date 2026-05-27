@@ -19,7 +19,7 @@ import {
   FaYoutube,
 } from 'react-icons/fa';
 import { FaSquareThreads } from 'react-icons/fa6';
-import { MdLocationOn, MdPhotoLibrary } from 'react-icons/md';
+import { MdCleaningServices, MdLocationOn, MdPhotoLibrary, MdVolunteerActivism } from 'react-icons/md';
 import { RiDiscordFill, RiMailFill, RiPhoneFill } from 'react-icons/ri';
 import { SiResearchgate, SiX, SiUdemy } from 'react-icons/si';
 import { Profile } from '../../interfaces/profile';
@@ -325,7 +325,7 @@ const DetailsCard = ({ profile, loading, social, github }: Props) => {
                 <ListItem
                   icon={<FaGlobe />}
                   title="Website:"
-                  value={"Jack Brett"}
+                  value={'Jack Brett'}
                   link={
                     !social.website.startsWith('http')
                       ? `http://${social.website}`
@@ -339,6 +339,14 @@ const DetailsCard = ({ profile, loading, social, github }: Props) => {
                   title="Photos:"
                   value="All These Things"
                   link={social.googlePhotos}
+                />
+              )}
+              {social?.volunteer && (
+                <ListItem
+                  icon={<MdVolunteerActivism />}
+                  title="My Volunteering Page:"
+                  value="Clean Up Hastings"
+                  link={social.volunteer}
                 />
               )}
               {social?.telegram && (

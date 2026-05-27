@@ -64,6 +64,7 @@ export interface SanitizedSocial {
   email?: string;
   discord?: string;
   googlePhotos?: string;
+  volunteer?: string;
 }
 
 export interface SanitizedResume {

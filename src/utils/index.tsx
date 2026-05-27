@@ -83,6 +83,7 @@ export const getSanitizedConfig = (
         researchGate: config?.social?.researchGate,
         discord: config?.social?.discord,
         googlePhotos: config?.social?.googlePhotos,
+        volunteer: config?.social?.volunteer,
       },
       resume: {
         fileUrl: config?.resume?.fileUrl || '',

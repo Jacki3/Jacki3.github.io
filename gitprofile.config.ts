@@ -122,6 +122,7 @@ const CONFIG = {
     phone: '',
     email: '',
     googlePhotos: 'https://photos.app.goo.gl/WLdyv6qsks7XeeV87',
+    volunteer: 'https://www.facebook.com/groups/121104183240204',
   },
   resume: {
     fileUrl:

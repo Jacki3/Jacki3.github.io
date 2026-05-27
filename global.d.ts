@@ -208,6 +208,8 @@ interface Social {
   discord?: string;
 
   googlePhotos?: string;
+
+  volunteer?: string;
 }
 
 interface Resume {
