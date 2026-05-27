@@ -40,12 +40,12 @@ const CONFIG = {
               link: 'https://apps.apple.com/gb/app/replicas/id6747492708',
           },
           {
-              title: 'LoGaCulture & Boggy Entertainment - Invitation Investigation',
+              title: 'LoGaCulture & Boggy Entertainment - Bloom & Wander',
               description:
-                  'A family-friendly locative game set at Avebury, where I led the development using LUTE. Players explore the ancient site to help cute animal characters recover their lost invitations and make it to a tea party on time.',
+                  'A extended/mixed-reality game where players must complete spatial puzzles to bring the site of Avebury into bloom. I was the lead engineer alongside the designer and the game was partly created with LUTE.',
               imageUrl:
-                  '/rabbitlineless.png',
-              link: 'https://apps.apple.com/gb/app/invitation-investigation/id6747429396',
+                  '/bloomIconNoBg.png',
+              link: 'https://play.google.com/store/apps/details?id=com.AntoninoFrazzitta.BloomWander',
           },
         {
           title: 'VitaeVR, KCL, Sony & Epic Games - VStore',
