@@ -95,7 +95,7 @@ const CONFIG = {
       },
       manual: {
         // Properties for manually specifying projects
-        projects: ['LoGaCulture/LUTE', 'LoGaCulture/LUTE-Server', 'Jacki3/Looper', 'Jacki3/Bridge-Wave'], // List of repository names to display. example: ['arifszn/my-project1', 'arifszn/my-project2']
+        projects: ['LoGaCulture/LUTE', 'Jacki3/place-maps', 'Jacki3/Looper', 'Jacki3/Bridge-Wave'], // List of repository names to display. example: ['arifszn/my-project1', 'arifszn/my-project2']
       },
     },
   },
