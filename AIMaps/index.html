@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stones &amp; Stories · walking prototype</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+
+  <style>
+    :root {
+      --chalk: #FBFAF6;
+      --parchment-edge: #E4DFD2;
+      --ink: #1F2A24;
+      --ink-soft: #5C665F;
+      --moss: #2E5D46;
+      --amber: #B7791F;
+      --shadow: 0 6px 24px rgba(31, 42, 36, 0.14);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: "Instrument Sans", system-ui, sans-serif;
+      color: var(--ink);
+    }
+
+    #map { position: absolute; inset: 0; }
+
+    /* ---- Floating HUD (masthead + filter chips) ---- */
+    .hud {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: min(420px, calc(100vw - 90px));
+    }
+
+    .masthead {
+      background: var(--chalk);
+      border: 1px solid var(--parchment-edge);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px 18px 14px;
+    }
+
+    .eyebrow {
+      margin: 0 0 2px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+
+    .masthead h1 {
+      margin: 0;
+      font-family: "Fraunces", serif;
+      font-weight: 600;
+      font-size: 26px;
+      line-height: 1.1;
+    }
+
+    .masthead .count {
+      margin: 4px 0 10px;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+
+    .search {
+      display: flex;
+      gap: 6px;
+      margin: 0 0 8px;
+    }
+
+    .search input {
+      flex: 1;
+      min-width: 0;
+      font: inherit;
+      font-size: 13.5px;
+      padding: 8px 11px;
+      border: 1px solid var(--parchment-edge);
+      border-radius: 9px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .search input::placeholder { color: #9AA39D; }
+
+    .search button {
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 9px;
+      background: var(--moss);
+      color: var(--chalk);
+      cursor: pointer;
+    }
+
+    .search button:hover { background: #234A37; }
+
+    .area-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .area-actions button {
+      font: inherit;
+      font-size: 12.5px;
+      font-weight: 500;
+      padding: 6px 11px;
+      border: 1px solid var(--parchment-edge);
+      border-radius: 999px;
+      background: #F2EFE6;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .area-actions button:hover { background: #E9E4D5; }
+    .area-actions button:disabled { opacity: 0.55; cursor: wait; }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 13px;
+      border: 1px solid var(--parchment-edge);
+      border-radius: 999px;
+      background: var(--chalk);
+      box-shadow: 0 2px 8px rgba(31, 42, 36, 0.10);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink);
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .chip .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px rgba(31, 42, 36, 0.18);
+    }
+
+    .chip:hover { background: #F2EFE6; }
+
+    .chip.active {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: var(--chalk);
+    }
+
+    /* ---- Walking-point markers (DOM markers, so they can be characterful) ---- */
+    .walk-marker {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 3px solid var(--moss);
+      background: var(--chalk);
+      box-shadow: 0 0 0 2px #fff, 0 4px 10px rgba(31, 42, 36, 0.28);
+      font-size: 17px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: transform 0.15s ease;
+    }
+
+    .walk-marker:hover { transform: scale(1.12); }
+
+    .walk-marker.active {
+      background: var(--moss);
+      border-color: var(--ink);
+    }
+
+    .walk-marker.generated { border-style: dashed; }
+
+    /* ---- Detail panel ---- */
+    .panel {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      bottom: 16px;
+      width: 340px;
+      z-index: 6;
+      background: var(--chalk);
+      border: 1px solid var(--parchment-edge);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      overflow-y: auto;
+      transform: translateX(calc(100% + 24px));
+      transition: transform 0.25s ease;
+      visibility: hidden;
+    }
+
+    .panel.open { transform: translateX(0); visibility: visible; }
+
+    .panel-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--parchment-edge);
+      border-radius: 50%;
+      background: var(--chalk);
+      font-size: 16px;
+      line-height: 1;
+      color: var(--ink-soft);
+      cursor: pointer;
+    }
+
+    .panel-close:hover { color: var(--ink); background: #F2EFE6; }
+
+    /* Waymark disc: nod to the rights-of-way marker discs on fingerposts */
+    .disc {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 1px rgba(31, 42, 36, 0.22), 0 3px 8px rgba(31, 42, 36, 0.18);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .panel h2 {
+      margin: 2px 0 6px;
+      font-family: "Fraunces", serif;
+      font-weight: 600;
+      font-size: 24px;
+      line-height: 1.15;
+    }
+
+    .panel .meta {
+      margin: 0 0 12px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--ink-soft);
+    }
+
+    .panel .meta a { color: var(--moss); font-weight: 600; text-decoration: none; }
+    .panel .meta a:hover { text-decoration: underline; }
+    .panel .meta.estimated { color: var(--amber); }
+
+    .panel .blurb {
+      margin: 0 0 16px;
+      font-size: 14.5px;
+      line-height: 1.55;
+      color: #34403A;
+    }
+
+    .tipbox {
+      border-left: 3px solid var(--moss);
+      background: #EFF3EC;
+      border-radius: 0 8px 8px 0;
+      padding: 10px 12px;
+      margin: 0 0 16px;
+    }
+
+    .tipbox .tip-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--moss);
+      margin-bottom: 3px;
+    }
+
+    .tipbox p { margin: 0; font-size: 13.5px; line-height: 1.5; }
+
+    /* Ordered stop list shown for a walk */
+    .stops {
+      list-style: none;
+      margin: 0 0 16px;
+      padding: 0;
+      border-top: 1px solid var(--parchment-edge);
+    }
+
+    .stops li { border-bottom: 1px solid var(--parchment-edge); }
+
+    .stops button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 9px 4px;
+      border: none;
+      background: none;
+      font: inherit;
+      font-size: 14px;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .stops button:hover { color: var(--moss); }
+
+    .stop-n {
+      flex: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--moss);
+      background: var(--chalk);
+      color: var(--moss);
+      font-size: 11.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stop-cat {
+      margin-left: auto;
+      flex: none;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    /* Directions block at the foot of a place panel */
+    .routebox {
+      border-top: 1px solid var(--parchment-edge);
+      padding-top: 14px;
+    }
+
+    .route-btn {
+      display: block;
+      width: 100%;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 9px;
+      background: var(--moss);
+      color: var(--chalk);
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .route-btn:hover { background: #234A37; }
+    .route-btn:disabled { opacity: 0.6; cursor: wait; }
+
+    .route-note {
+      margin: 0 0 10px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--ink-soft);
+    }
+
+    .directions {
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--moss);
+      text-decoration: none;
+      border-bottom: 1.5px solid currentColor;
+      padding-bottom: 1px;
+    }
+
+    .directions:hover { color: var(--ink); }
+
+    /* ---- Tile source note ---- */
+    .note {
+      position: fixed;
+      bottom: 34px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: min(560px, calc(100vw - 32px));
+      background: var(--chalk);
+      border: 1px solid var(--parchment-edge);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+
+    .note p { margin: 0; }
+    .note code { font-size: 12px; background: #F0EDE3; padding: 1px 5px; border-radius: 4px; }
+
+    .note button {
+      border: none;
+      background: none;
+      font: inherit;
+      font-weight: 600;
+      color: var(--moss);
+      cursor: pointer;
+      white-space: nowrap;
+      padding: 4px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translate(-50%, 8px);
+      z-index: 7;
+      background: var(--ink);
+      color: var(--chalk);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 9px 16px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    /* ---- Map furniture ---- */
+    .maplibregl-popup.poi-tip .maplibregl-popup-content {
+      font-family: "Instrument Sans", system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink);
+      background: var(--chalk);
+      border: 1px solid var(--parchment-edge);
+      border-radius: 8px;
+      padding: 6px 10px;
+      box-shadow: 0 3px 10px rgba(31, 42, 36, 0.15);
+    }
+
+    .maplibregl-popup.poi-tip .maplibregl-popup-tip { border-top-color: var(--chalk); }
+
+    :focus-visible { outline: 2px solid var(--moss); outline-offset: 2px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .panel, .chip, .walk-marker { transition: none; }
+    }
+
+    /* ---- Small screens: panel becomes a bottom sheet ---- */
+    @media (max-width: 720px) {
+      .panel {
+        top: auto;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        width: auto;
+        max-height: 58vh;
+        transform: translateY(calc(100% + 24px));
+      }
+      .panel.open { transform: translateY(0); }
+      .note { bottom: 12px; }
+      .masthead h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <div class="hud">
+    <header class="masthead">
+      <p class="eyebrow">Phase 2 · walks &amp; sources</p>
+      <h1>Stones &amp; Stories</h1>
+      <p class="count" id="count"></p>
+      <form class="search" id="search-form">
+        <input id="search-input" type="search" placeholder="Search a village, town or postcode&hellip;"
+               aria-label="Search for a place" autocomplete="off" />
+        <button type="submit">Go</button>
+      </form>
+      <div class="area-actions">
+        <button id="scan-btn" title="Pull places for the current view from OpenStreetMap and Wikipedia">&#8982; Scan this area</button>
+        <button id="gen-btn" title="Auto-generate a walking route through the best places on the map">&#10024; Stitch a walk</button>
+      </div>
+    </header>
+    <nav class="chips" id="chips" aria-label="Filter places by category"></nav>
+  </div>
+
+  <aside class="panel" id="panel" aria-label="Details">
+    <button class="panel-close" id="panel-close" aria-label="Close details">&#10005;</button>
+    <div class="disc" id="panel-disc"></div>
+    <p class="eyebrow" id="panel-cat"></p>
+    <h2 id="panel-name"></h2>
+    <p class="meta" id="panel-meta" hidden></p>
+    <p class="blurb" id="panel-blurb"></p>
+    <div class="tipbox" id="panel-tipbox" hidden>
+      <span class="tip-label">Worth knowing</span>
+      <p id="panel-tip"></p>
+    </div>
+    <ol class="stops" id="panel-stops" hidden></ol>
+    <div class="routebox" id="panel-routebox" hidden>
+      <button class="route-btn" id="panel-route-btn">Walking route on the map</button>
+      <p class="route-note" id="panel-route-note" hidden></p>
+      <a class="directions" id="panel-directions" target="_blank" rel="noopener">Open in Google Maps &#8599;</a>
+    </div>
+  </aside>
+
+  <div class="note" id="tile-note" hidden>
+    <p>No OS key found, so you are on OpenStreetMap tiles. Paste your key into <code>OS_KEY</code> in <code>index.html</code>.</p>
+    <button id="note-dismiss">Dismiss</button>
+  </div>
+
+  <script>
+    // Some contexts (throttled/background tabs, embedded previews) stop
+    // delivering animation frames entirely, which leaves MapLibre stuck
+    // before its "load" event. Race every frame request against a short
+    // timer: a healthy tab always wins with the real frame, a frozen one
+    // falls back to timers so the map still finishes loading.
+    (function () {
+      const nativeRaf = window.requestAnimationFrame.bind(window);
+      const nativeCancel = window.cancelAnimationFrame.bind(window);
+
+      window.requestAnimationFrame = function (fn) {
+        const handle = { done: false };
+        const run = (t) => {
+          if (handle.done) return;
+          handle.done = true;
+          fn(t);
+        };
+        handle.raf = nativeRaf((t) => { clearTimeout(handle.timer); run(t); });
+        handle.timer = setTimeout(() => { nativeCancel(handle.raf); run(performance.now()); }, 120);
+        return handle;
+      };
+
+      window.cancelAnimationFrame = function (handle) {
+        if (handle && typeof handle === "object") {
+          handle.done = true;
+          nativeCancel(handle.raf);
+          clearTimeout(handle.timer);
+        } else {
+          nativeCancel(handle);
+        }
+      };
+    })();
+  </script>
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="pois.js"></script>
+  <script src="walks.js"></script>
+  <script src="routing.js"></script>
+  <script src="sources.js"></script>
+  <script>
+    // ------------------------------------------------------------------
+    // Basemap config. Options for BASEMAP:
+    //   "walking"  vector tiles restyled so paths lead and roads recede
+    //              (OpenFreeMap, no key needed)
+    //   "os"       Ordnance Survey Outdoor raster tiles (paste OS_KEY)
+    //   "osm"      stock OpenStreetMap raster tiles
+    // Raster tiles are pre-drawn images, so only "walking" can be themed.
+    // ------------------------------------------------------------------
+    const BASEMAP = "walking";
+    const OS_KEY = "pk.eyJ1IjoiamJvZyIsImEiOiJjbHF6NWtiMWowMmdkMmtudndueGxqcWNiIn0.vbbUt9ho6qSdm5E-p2oQgw";
+
+    const CATEGORIES = {
+      heritage: { label: "Heritage",     colour: "#6750C6" },
+      story:    { label: "Stories",      colour: "#B7791F" },
+      nature:   { label: "Nature",       colour: "#3F7D53" },
+      food:     { label: "Food & drink", colour: "#B4462F" },
+      shop:     { label: "Shops",        colour: "#2C7A8C" }
+    };
+
+    const RASTER = {
+      os: {
+        url: "https://api.os.uk/maps/raster/v1/zxy/Outdoor_3857/{z}/{x}/{y}.png?key=" + OS_KEY,
+        attribution: "Contains OS data &copy; Crown copyright and database rights 2026",
+        maxzoom: 16
+      },
+      osm: {
+        url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        attribution: "&copy; OpenStreetMap contributors",
+        maxzoom: 19
+      }
+    };
+
+    const osFallback = BASEMAP === "os" && OS_KEY.trim().length === 0;
+
+    function basemapStyle() {
+      if (BASEMAP === "walking") {
+        return "https://tiles.openfreemap.org/styles/liberty";
+      }
+      const raster = RASTER[BASEMAP === "os" && !osFallback ? "os" : "osm"];
+      return {
+        version: 8,
+        glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+        sources: {
+          basemap: {
+            type: "raster",
+            tiles: [raster.url],
+            tileSize: 256,
+            attribution: raster.attribution,
+            maxzoom: raster.maxzoom
+          }
+        },
+        layers: [{ id: "basemap", type: "raster", source: "basemap" }]
+      };
+    }
+
+    const map = new maplibregl.Map({
+      container: "map",
+      center: [-1.8542, 51.4283],
+      zoom: 13.5,
+      minZoom: 9,
+      maxZoom: 18,
+      style: basemapStyle()
+    });
+
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+
+    const geolocate = new maplibregl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true },
+      trackUserLocation: true
+    });
+    map.addControl(geolocate, "top-right");
+    map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
+
+    const colourExpr = [
+      "match", ["get", "type"],
+      ...Object.entries(CATEGORIES).flatMap(([key, cat]) => [key, cat.colour]),
+      "#5C665F"
+    ];
+
+    const EMPTY_FC = { type: "FeatureCollection", features: [] };
+    const NO_MATCH = ["==", ["get", "id"], "___none___"];
+
+    // ---- App state ----
+    let placesData = { type: "FeatureCollection", features: POIS.features.slice() };
+    let selectedId = null;
+    let activeCat = null;
+    let activeWalk = null;    // walk object from walks.js or a generated one
+    let walkRoute = null;     // routing result for the active walk
+    let panelMode = null;     // "poi" | "walk" | null
+    let currentPoi = null;    // { id, name, coords } for the open place panel
+    let lastUserPos = null;   // [lng, lat] once the geolocate control fires
+    let areaLabel = "Avebury";
+    let busy = false;
+    const generatedWalks = [];
+    const walkMarkers = [];   // { walk, el }
+
+    geolocate.on("geolocate", (e) => {
+      lastUserPos = [e.coords.longitude, e.coords.latitude];
+    });
+
+    map.on("load", () => {
+      if (BASEMAP === "walking") {
+        try {
+          applyWalkingTheme();
+        } catch (err) {
+          console.warn("Walking theme could not be applied:", err);
+        }
+      }
+
+      map.addSource("pois", { type: "geojson", data: placesData });
+      map.addSource("route", { type: "geojson", data: EMPTY_FC });
+      map.addSource("walk-stops", { type: "geojson", data: EMPTY_FC });
+
+      // Route underlay: chalk casing so the line reads on any basemap,
+      // dashed overlay in the waymark colour.
+      map.addLayer({
+        id: "route-casing",
+        type: "line",
+        source: "route",
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: {
+          "line-color": "#FBFAF6",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 12, 5, 16, 10],
+          "line-opacity": 0.9
+        }
+      });
+
+      map.addLayer({
+        id: "route-line",
+        type: "line",
+        source: "route",
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: {
+          "line-color": "#2E5D46",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 12, 2.5, 16, 5],
+          "line-dasharray": [2, 1.4]
+        }
+      });
+
+      // White halo under each dot, so markers read on any basemap.
+      map.addLayer({
+        id: "poi-halo",
+        type: "circle",
+        source: "pois",
+        paint: { "circle-radius": 10, "circle-color": "#ffffff", "circle-opacity": 0.95 }
+      });
+
+      map.addLayer({
+        id: "poi-dot",
+        type: "circle",
+        source: "pois",
+        paint: { "circle-radius": 6.5, "circle-color": colourExpr }
+      });
+
+      // Moss ring around the POIs a walk highlights.
+      map.addLayer({
+        id: "poi-walk-ring",
+        type: "circle",
+        source: "pois",
+        filter: NO_MATCH,
+        paint: {
+          "circle-radius": 12,
+          "circle-color": "rgba(0,0,0,0)",
+          "circle-stroke-width": 3,
+          "circle-stroke-color": "#2E5D46"
+        }
+      });
+
+      // Selection ring, filtered to the clicked POI's id.
+      map.addLayer({
+        id: "poi-selected",
+        type: "circle",
+        source: "pois",
+        filter: NO_MATCH,
+        paint: {
+          "circle-radius": 13,
+          "circle-color": "rgba(0,0,0,0)",
+          "circle-stroke-width": 2.5,
+          "circle-stroke-color": "#1F2A24"
+        }
+      });
+
+      // Stop numbers floating above highlighted POIs. Needs glyphs; if the
+      // style has none this throws, and the walk still works without numbers.
+      try {
+        map.addLayer({
+          id: "walk-stop-numbers",
+          type: "symbol",
+          source: "walk-stops",
+          layout: {
+            "text-field": ["get", "n"],
+            "text-font": ["Noto Sans Regular"],
+            "text-size": 12,
+            "text-offset": [0, -1.5],
+            "text-allow-overlap": true
+          },
+          paint: {
+            "text-color": "#1F2A24",
+            "text-halo-color": "#FBFAF6",
+            "text-halo-width": 2
+          }
+        });
+      } catch (err) {
+        console.warn("Stop numbers unavailable on this basemap:", err);
+      }
+
+      const bounds = new maplibregl.LngLatBounds();
+      placesData.features.forEach((f) => bounds.extend(f.geometry.coordinates));
+      map.fitBounds(bounds, { padding: 70, animate: false });
+
+      WALKS.forEach(addWalkMarker);
+      renderChips();
+      updateCount();
+    });
+
+    // ------------------------------------------------------------------
+    // Walking theme: runs over the loaded vector style, fading every
+    // road and rail line, quietening road labels, then laying a bold
+    // dashed line over anything OSM classes as a path or track.
+    // Only possible with vector tiles; raster cartography is baked in.
+    // ------------------------------------------------------------------
+    function applyWalkingTheme() {
+      const style = map.getStyle();
+
+      for (const layer of style.layers) {
+        if (layer["source-layer"] === "transportation" && layer.type === "line" &&
+            !/path|track|footway|bridleway|steps|pedestrian/i.test(layer.id)) {
+          map.setPaintProperty(layer.id, "line-opacity", 0.35);
+        }
+        if (layer["source-layer"] === "transportation_name" && layer.type === "symbol") {
+          map.setPaintProperty(layer.id, "text-opacity", 0.55);
+          map.setPaintProperty(layer.id, "icon-opacity", 0.4);
+        }
+      }
+
+      const vectorSource = Object.keys(style.sources)
+        .find((key) => style.sources[key].type === "vector");
+      const firstSymbol = style.layers.find((layer) => layer.type === "symbol");
+
+      if (vectorSource) {
+        map.addLayer({
+          id: "walking-paths",
+          type: "line",
+          source: vectorSource,
+          "source-layer": "transportation",
+          minzoom: 11,
+          filter: ["match", ["get", "class"], ["path", "track"], true, false],
+          layout: { "line-cap": "round", "line-join": "round" },
+          paint: {
+            "line-color": "#2E5D46",
+            "line-width": ["interpolate", ["linear"], ["zoom"], 12, 1, 14, 1.8, 17, 3.2],
+            "line-dasharray": [2.4, 1.8],
+            "line-opacity": 0.95
+          }
+        }, firstSymbol ? firstSymbol.id : undefined);
+      }
+    }
+
+    // ---- Hover tooltip ----
+    const tip = new maplibregl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+      offset: 14,
+      className: "poi-tip"
+    });
+
+    map.on("mousemove", "poi-dot", (e) => {
+      map.getCanvas().style.cursor = "pointer";
+      const f = e.features[0];
+      tip.setLngLat(f.geometry.coordinates).setText(f.properties.name).addTo(map);
+    });
+
+    map.on("mouseleave", "poi-dot", () => {
+      map.getCanvas().style.cursor = "";
+      tip.remove();
+    });
+
+    // ---- Click handling ----
+    map.on("click", "poi-dot", (e) => {
+      if (e.originalEvent.altKey) return;
+      openPanel(e.features[0]);
+    });
+
+    map.on("click", (e) => {
+      if (e.originalEvent.altKey) {
+        copyFeatureStub(e.lngLat);
+        return;
+      }
+      if (!map.getLayer("poi-dot")) return;
+      const hits = map.queryRenderedFeatures(e.point, { layers: ["poi-dot"] });
+      if (hits.length === 0) closePanel();
+    });
+
+    // ------------------------------------------------------------------
+    // Detail panel: two modes. "poi" shows one place (with in-app
+    // directions); "walk" shows an itinerary with numbered stops.
+    // ------------------------------------------------------------------
+    const panel = document.getElementById("panel");
+    const el = (id) => document.getElementById(id);
+
+    function openPanel(feature) {
+      const p = feature.properties;
+      const cat = CATEGORIES[p.type] || { label: p.type, colour: "#5C665F" };
+      const coords = feature.geometry.coordinates;
+      const url = p.url && p.url !== "null" ? p.url : null;
+
+      panelMode = "poi";
+      selectedId = p.id;
+      currentPoi = { id: p.id, name: p.name, coords: coords };
+      map.setFilter("poi-selected", ["==", ["get", "id"], selectedId]);
+      if (!activeWalk) clearRoute();
+
+      const disc = el("panel-disc");
+      disc.style.background = cat.colour;
+      disc.textContent = "";
+      el("panel-cat").textContent = cat.label;
+      el("panel-name").textContent = p.name;
+      el("panel-blurb").textContent = p.blurb;
+
+      const meta = el("panel-meta");
+      const sourceLabel = SOURCE_LABELS[p.source] || p.source || "unknown";
+      meta.classList.remove("estimated");
+      meta.innerHTML = "From " + escapeHtml(sourceLabel) +
+        (url ? ' &middot; <a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">Read more &#8599;</a>' : "");
+      meta.hidden = false;
+
+      const tipbox = el("panel-tipbox");
+      if (p.tip) {
+        el("panel-tip").textContent = p.tip;
+        tipbox.hidden = false;
+      } else {
+        tipbox.hidden = true;
+      }
+
+      el("panel-stops").hidden = true;
+      el("panel-routebox").hidden = false;
+      el("panel-route-note").hidden = true;
+      el("panel-route-btn").textContent = lastUserPos
+        ? "Walking route from my location"
+        : "Walking route from the map centre";
+      el("panel-directions").href =
+        "https://www.google.com/maps/dir/?api=1&destination=" + coords[1] + "," + coords[0] + "&travelmode=walking";
+
+      panel.classList.add("open");
+      map.easeTo({ center: coords, duration: 450 });
+    }
+
+    function renderWalkPanel(walk, route) {
+      panelMode = "walk";
+      selectedId = null;
+      currentPoi = null;
+      map.setFilter("poi-selected", NO_MATCH);
+
+      const disc = el("panel-disc");
+      disc.style.background = "#2E5D46";
+      disc.textContent = "\u{1F97E}";
+      el("panel-cat").textContent = walk.kind === "generated"
+        ? "Stitched walk · experimental"
+        : "Waymarked walk · " + walk.time;
+      el("panel-name").textContent = walk.name;
+      el("panel-blurb").textContent = walk.blurb;
+
+      const meta = el("panel-meta");
+      meta.textContent = fmtDistance(route.distance) + " · about " +
+        fmtDuration(route.duration) + " walking · via " + route.engine;
+      meta.classList.toggle("estimated", !!route.estimated);
+      meta.hidden = false;
+
+      el("panel-tipbox").hidden = true;
+      el("panel-routebox").hidden = true;
+
+      const list = el("panel-stops");
+      list.innerHTML = "";
+      walkStops(walk).forEach((f, i) => {
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        const n = document.createElement("span");
+        n.className = "stop-n";
+        n.textContent = i + 1;
+        btn.appendChild(n);
+        btn.appendChild(document.createTextNode(f.properties.name));
+        const dot = document.createElement("span");
+        dot.className = "stop-cat";
+        dot.style.background = (CATEGORIES[f.properties.type] || {}).colour || "#5C665F";
+        btn.appendChild(dot);
+        btn.addEventListener("click", () => openPanel(f));
+        li.appendChild(btn);
+        list.appendChild(li);
+      });
+      list.hidden = false;
+
+      panel.classList.add("open");
+    }
+
+    // Close = step back: a place opened from a walk returns to the walk;
+    // closing a walk clears its route and highlights.
+    function closePanel() {
+      if (panelMode === "poi") {
+        selectedId = null;
+        currentPoi = null;
+        map.setFilter("poi-selected", NO_MATCH);
+        if (activeWalk) {
+          renderWalkPanel(activeWalk, walkRoute);
+          return;
+        }
+        clearRoute();
+      } else if (panelMode === "walk") {
+        clearWalk();
+      }
+      panelMode = null;
+      panel.classList.remove("open");
+    }
+
+    el("panel-close").addEventListener("click", closePanel);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closePanel();
+    });
+
+    // ------------------------------------------------------------------
+    // Walks: walking-point markers, route fetching, stop highlighting.
+    // ------------------------------------------------------------------
+    function addWalkMarker(walk) {
+      const markerEl = document.createElement("button");
+      markerEl.className = "walk-marker" + (walk.kind === "generated" ? " generated" : "");
+      markerEl.textContent = "\u{1F97E}";
+      markerEl.title = walk.name;
+      markerEl.setAttribute("aria-label", "Walk: " + walk.name);
+      markerEl.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openWalk(walk);
+      });
+      new maplibregl.Marker({ element: markerEl, anchor: "center" })
+        .setLngLat(walk.start)
+        .addTo(map);
+      walkMarkers.push({ walk: walk, el: markerEl });
+    }
+
+    async function openWalk(walk) {
+      if (busy) return;
+      if (activeWalk && activeWalk.id !== walk.id) clearWalk();
+
+      let route = walk._route;
+      if (!route) {
+        busy = true;
+        showToast("Plotting the route along real paths…");
+        try {
+          route = await Routing.route(walk.waypoints);
+          walk._route = route;
+        } finally {
+          busy = false;
+        }
+        if (route.estimated) {
+          showToast("Routing engine unreachable — showing a straight-line estimate");
+        }
+      }
+
+      activeWalk = walk;
+      walkRoute = route;
+      setRoute(route.geometry, "#2E5D46");
+      applyWalkHighlights(walk);
+      renderWalkPanel(walk, route);
+      syncWalkMarkerState();
+      fitToGeometry(route.geometry);
+    }
+
+    function walkStops(walk) {
+      return walk.highlights
+        .map((id) => placesData.features.find((f) => f.properties.id === id))
+        .filter(Boolean);
+    }
+
+    function applyWalkHighlights(walk) {
+      const stops = walkStops(walk);
+      const ids = stops.map((f) => f.properties.id);
+      const inWalk = ["in", ["get", "id"], ["literal", ids]];
+
+      map.setPaintProperty("poi-dot", "circle-opacity", ["case", inWalk, 1, 0.25]);
+      map.setPaintProperty("poi-halo", "circle-opacity", ["case", inWalk, 0.95, 0.2]);
+      map.setFilter("poi-walk-ring", inWalk);
+
+      map.getSource("walk-stops").setData({
+        type: "FeatureCollection",
+        features: stops.map((f, i) => ({
+          type: "Feature",
+          properties: { n: String(i + 1) },
+          geometry: f.geometry
+        }))
+      });
+    }
+
+    function clearWalk() {
+      activeWalk = null;
+      walkRoute = null;
+      clearRoute();
+      if (map.getLayer("poi-dot")) {
+        map.setPaintProperty("poi-dot", "circle-opacity", 1);
+        map.setPaintProperty("poi-halo", "circle-opacity", 0.95);
+        map.setFilter("poi-walk-ring", NO_MATCH);
+        map.getSource("walk-stops").setData(EMPTY_FC);
+      }
+      syncWalkMarkerState();
+    }
+
+    function syncWalkMarkerState() {
+      walkMarkers.forEach((m) => {
+        m.el.classList.toggle("active", !!activeWalk && activeWalk.id === m.walk.id);
+      });
+    }
+
+    // ---- Route drawing helpers ----
+    function setRoute(geometry, colour) {
+      map.getSource("route").setData({ type: "Feature", properties: {}, geometry: geometry });
+      map.setPaintProperty("route-line", "line-color", colour);
+    }
+
+    function clearRoute() {
+      if (map.getSource("route")) map.getSource("route").setData(EMPTY_FC);
+    }
+
+    function fitToGeometry(geometry) {
+      const b = new maplibregl.LngLatBounds();
+      geometry.coordinates.forEach((c) => b.extend(c));
+      map.fitBounds(b, {
+        padding: {
+          top: 90, bottom: 80, left: 80,
+          right: window.innerWidth > 720 ? 400 : 80
+        }
+      });
+    }
+
+    // ------------------------------------------------------------------
+    // In-app directions: user location (or map centre) to the open place,
+    // routed on foot by GraphHopper or the OSM routing server.
+    // ------------------------------------------------------------------
+    el("panel-route-btn").addEventListener("click", async () => {
+      if (!currentPoi || busy) return;
+      if (activeWalk) clearWalk();
+
+      const origin = lastUserPos || [map.getCenter().lng, map.getCenter().lat];
+      const btn = el("panel-route-btn");
+      const note = el("panel-route-note");
+      busy = true;
+      btn.disabled = true;
+      btn.textContent = "Plotting route…";
+
+      try {
+        const route = await Routing.route([origin, currentPoi.coords]);
+        setRoute(route.geometry, "#B7791F");
+        fitToGeometry(route.geometry);
+        note.textContent = fmtDistance(route.distance) + " · about " +
+          fmtDuration(route.duration) + " on foot · via " + route.engine +
+          (lastUserPos ? "" : " · start is the map centre; tap the locate arrow for a live start");
+        note.hidden = false;
+      } finally {
+        busy = false;
+        btn.disabled = false;
+        btn.textContent = lastUserPos
+          ? "Walking route from my location"
+          : "Walking route from the map centre";
+      }
+    });
+
+    // ------------------------------------------------------------------
+    // Any area: geocode a search, scan the view for places from every
+    // source, and stitch a walk out of whatever was found.
+    // ------------------------------------------------------------------
+    el("search-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const q = el("search-input").value.trim();
+      if (!q || busy) return;
+      busy = true;
+      showToast("Searching…");
+      try {
+        const hit = await geocodePlace(q);
+        if (!hit) {
+          showToast("Nothing found for “" + q + "”");
+          return;
+        }
+        areaLabel = hit.name;
+        map.flyTo({ center: [hit.lng, hit.lat], zoom: 14, duration: 1200 });
+        busy = false;
+        await scanArea([hit.lng, hit.lat], hit.name);
+      } catch (err) {
+        console.warn("Search failed:", err);
+        showToast("Search failed — check the connection and try again");
+      } finally {
+        busy = false;
+      }
+    });
+
+    el("scan-btn").addEventListener("click", () => {
+      const c = map.getCenter();
+      scanArea([c.lng, c.lat], areaLabel === "Avebury" ? "this area" : areaLabel);
+    });
+
+    async function scanArea(centre, label) {
+      if (busy) return;
+      busy = true;
+      const btn = el("scan-btn");
+      btn.disabled = true;
+      showToast("Gathering places from OpenStreetMap and Wikipedia…");
+
+      try {
+        const bounds = boxAround(centre, 1500);
+        const result = await loadPlaces(bounds);
+        placesData = { type: "FeatureCollection", features: result.features };
+        map.getSource("pois").setData(placesData);
+
+        if (selectedId && !placesData.features.some((f) => f.properties.id === selectedId)) {
+          closePanel();
+        }
+        if (activeWalk) applyWalkHighlights(activeWalk);
+
+        updateCount();
+        showToast(scanSummary(result));
+      } catch (err) {
+        console.warn("Area scan failed:", err);
+        showToast("Could not load places for " + label);
+      } finally {
+        busy = false;
+        btn.disabled = false;
+      }
+    }
+
+    function scanSummary(result) {
+      const total = result.features.length;
+      const parts = result.report.map((r) => {
+        const short = { curated: "curated", osm: "OSM", wikipedia: "Wikipedia" }[r.source] || r.source;
+        return r.ok ? r.count + " " + short : short + " unavailable";
+      });
+      return total + " places · " + parts.join(" · ");
+    }
+
+    function boxAround(centre, radiusMetres) {
+      const dLat = radiusMetres / 111320;
+      const dLng = radiusMetres / (111320 * Math.cos((centre[1] * Math.PI) / 180));
+      return {
+        west: centre[0] - dLng,
+        east: centre[0] + dLng,
+        south: centre[1] - dLat,
+        north: centre[1] + dLat
+      };
+    }
+
+    // ---- Stitch a walk from whatever is on the map ----
+    el("gen-btn").addEventListener("click", generateWalk);
+
+    // A good walk is mostly heritage and stories, with a couple of
+    // food/shop/nature stops kept aside so it never turns into a pure
+    // monument march (or worse, loses the pub).
+    function pickWalkStops(centre, maxStops) {
+      const near = placesData.features
+        .map((f) => ({ f: f, d: haversineMetres(centre, f.geometry.coordinates) }))
+        .filter((x) => x.d < 2000)
+        .sort((a, b) => a.d - b.d)
+        .map((x) => x.f);
+
+      const anchors = near.filter((f) => f.properties.type === "heritage" || f.properties.type === "story");
+      const colour = near.filter((f) => f.properties.type !== "heritage" && f.properties.type !== "story");
+
+      const picks = anchors.slice(0, maxStops - Math.min(2, colour.length));
+      picks.push(...colour.slice(0, maxStops - picks.length));
+      if (picks.length < maxStops) {
+        picks.push(...near.filter((f) => !picks.includes(f)).slice(0, maxStops - picks.length));
+      }
+      return picks;
+    }
+
+    function generateWalk() {
+      const c = map.getCenter();
+      const centre = [c.lng, c.lat];
+      const candidates = pickWalkStops(centre, 7);
+
+      if (candidates.length < 2) {
+        showToast("Not enough places here yet — try “Scan this area” first");
+        return;
+      }
+
+      const ordered = nearestNeighbourOrder(centre, candidates);
+      const walk = {
+        id: "gen-" + Date.now(),
+        name: "A wander round " + areaLabel,
+        kind: "generated",
+        time: "",
+        blurb: "A walk stitched automatically from the most interesting places currently on the map, linked in walking order along real paths. Treat it as a suggestion — nobody has walked it yet.",
+        start: ordered[0].geometry.coordinates,
+        waypoints: ordered.map((f) => f.geometry.coordinates),
+        highlights: ordered.map((f) => f.properties.id)
+      };
+
+      generatedWalks.push(walk);
+      addWalkMarker(walk);
+      updateCount();
+      openWalk(walk);
+    }
+
+    function nearestNeighbourOrder(start, features) {
+      const remaining = features.slice();
+      const ordered = [];
+      let cursor = start;
+      while (remaining.length) {
+        let bestI = 0;
+        let bestD = Infinity;
+        remaining.forEach((f, i) => {
+          const d = haversineMetres(cursor, f.geometry.coordinates);
+          if (d < bestD) { bestD = d; bestI = i; }
+        });
+        const next = remaining.splice(bestI, 1)[0];
+        ordered.push(next);
+        cursor = next.geometry.coordinates;
+      }
+      return ordered;
+    }
+
+    // ---- Category filter chips ----
+    function renderChips() {
+      const nav = document.getElementById("chips");
+      nav.innerHTML = "";
+
+      const allChip = makeChip("All places", null, null);
+      nav.appendChild(allChip);
+
+      Object.entries(CATEGORIES).forEach(([key, cat]) => {
+        nav.appendChild(makeChip(cat.label, key, cat.colour));
+      });
+
+      syncChipState();
+    }
+
+    function makeChip(label, key, colour) {
+      const btn = document.createElement("button");
+      btn.className = "chip";
+      btn.dataset.cat = key || "";
+      if (colour) {
+        const dot = document.createElement("span");
+        dot.className = "dot";
+        dot.style.background = colour;
+        btn.appendChild(dot);
+      }
+      btn.appendChild(document.createTextNode(label));
+      btn.addEventListener("click", () => applyFilter(key));
+      return btn;
+    }
+
+    function applyFilter(cat) {
+      activeCat = cat;
+      const filter = cat ? ["==", ["get", "type"], cat] : null;
+      ["poi-halo", "poi-dot"].forEach((id) => map.setFilter(id, filter));
+
+      if (cat && selectedId) {
+        const f = placesData.features.find((x) => x.properties.id === selectedId);
+        if (f && f.properties.type !== cat) closePanel();
+      }
+
+      syncChipState();
+      updateCount();
+    }
+
+    function syncChipState() {
+      document.querySelectorAll(".chip").forEach((chip) => {
+        chip.classList.toggle("active", (chip.dataset.cat || null) === activeCat);
+      });
+    }
+
+    function updateCount() {
+      const total = placesData.features.length;
+      const shown = activeCat
+        ? placesData.features.filter((f) => f.properties.type === activeCat).length
+        : total;
+      const walks = WALKS.length + generatedWalks.length;
+      document.getElementById("count").textContent =
+        (activeCat ? shown + " of " + total + " places" : total + " places") +
+        " · " + walks + " walk" + (walks === 1 ? "" : "s");
+    }
+
+    // ---- Formatting helpers ----
+    function fmtDistance(m) {
+      return m < 950 ? Math.round(m) + " m" : (m / 1000).toFixed(1) + " km";
+    }
+
+    function fmtDuration(s) {
+      const mins = Math.round(s / 60);
+      if (mins < 60) return mins + " min";
+      return Math.floor(mins / 60) + " h " + (mins % 60) + " min";
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (ch) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[ch]));
+    }
+
+    // ------------------------------------------------------------------
+    // Author helper: Alt-click (Option-click on a Mac) anywhere on the
+    // map to copy a ready-to-paste feature stub for pois.js.
+    // ------------------------------------------------------------------
+    function copyFeatureStub(lngLat) {
+      const lng = lngLat.lng.toFixed(5);
+      const lat = lngLat.lat.toFixed(5);
+      const stub = [
+        "    {",
+        '      "type": "Feature",',
+        '      "properties": {',
+        '        "id": "new-place",',
+        '        "name": "New place",',
+        '        "type": "heritage",',
+        '        "blurb": ""',
+        "      },",
+        '      "geometry": { "type": "Point", "coordinates": [' + lng + ", " + lat + "] }",
+        "    },"
+      ].join("\n");
+
+      console.log("Feature stub for pois.js:\n" + stub);
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(stub)
+          .then(() => showToast("Feature stub copied. Paste it into pois.js"))
+          .catch(() => showToast("Feature stub logged to the console"));
+      } else {
+        showToast("Feature stub logged to the console");
+      }
+    }
+
+    let toastTimer = null;
+
+    function showToast(message) {
+      let toast = document.getElementById("toast");
+      if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "toast";
+        toast.className = "toast";
+        document.body.appendChild(toast);
+      }
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2800);
+    }
+
+    // ---- Tile source note (only when OS was chosen without a key) ----
+    if (osFallback) {
+      const note = document.getElementById("tile-note");
+      note.hidden = false;
+      document.getElementById("note-dismiss").addEventListener("click", () => {
+        note.hidden = true;
+      });
+    }
+  </script>
+</body>
+</html>
