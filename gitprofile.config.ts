@@ -72,12 +72,12 @@ const CONFIG = {
             link: 'https://github.com/Jacki3/Bridge-Wave',
           },
           {
-              title: 'Jack Brett - Level Design',
+              title: 'Boggy Entertainment - Place Maps',
               description:
-                  'The map that ignited my passion for level design and showed me the joy of crafting virtual worlds.',
+                  'A walking-first map of a landscape with clickable places, waymarked walks, live data sources and in-app foot routing. Inspired by visiting places for the first time and struggling to find the "main bit" of that place.',
               imageUrl:
-                  '/levelLogo.png',
-              link: 'https://youtu.be/UTABvihjE4A',
+                  '/hiking_boot.png',
+              link: 'https://jacki3.github.io/place-maps/',
           },
       ],
     },
